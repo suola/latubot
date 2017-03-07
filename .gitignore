@@ -3,6 +3,7 @@
 data/
 # local config file
 latubot.ini
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
