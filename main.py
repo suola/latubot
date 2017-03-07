@@ -50,7 +50,6 @@ def run_server(city_filter, tweet=False, use_json=False, tweet_1st_update=False,
         except tweepy.error.TweepError as e:
             print('error tweeting: %s' % e)
 
-    odata = {}
     ndata = {}
     i_update = 0
     while True:
@@ -59,7 +58,7 @@ def run_server(city_filter, tweet=False, use_json=False, tweet_1st_update=False,
 
         # Read old and new data
         try:
-            odata, ndata = _get_old_and_new_data(odata, ndata, simulate,
+            odata, ndata = _get_old_and_new_data(ndata, simulate,
                                                  use_json, i_update)
         except EOFError as e:
             print(e)
@@ -80,7 +79,7 @@ def run_server(city_filter, tweet=False, use_json=False, tweet_1st_update=False,
             time.sleep(SECS_BETWEEN_UPDATES)
 
 
-def _get_old_and_new_data(odata, ndata, simulate, use_json, i_update):
+def _get_old_and_new_data(ndata, simulate, use_json, i_update):
     """Read old and new data."""
     if simulate:
         # Simulation mode for testing, reads files from data-dir
@@ -164,7 +163,7 @@ def _tweet_changes(changes, send_tweets, simulate):
             # Quit if too many tweets sent to avoid spamming
             i_change += 1
             if i_change >= MAX_TWEETS_PER_UPDATE:
-                print('%d tweets / update sent, skipping the rest' % i)
+                print('%d tweets / update sent, skipping the rest' % i_change)
 
             # small interval between successive tweets
             if not simulate:
@@ -249,7 +248,7 @@ def _parse_html_source(tree):
 
 def _time_to_fn():
     """get current timestamp in format usable for filename"""
-    _fmt = '%Y-%m-%d-%H:%M:%S'
+    _fmt = '%Y-%m-%d-%H_%M_%S'
     now = datetime.datetime.now()
     return now.strftime(_fmt)
 
@@ -280,7 +279,7 @@ def print_status(cities):
     if not cities:
         pprint(data)
     else:
-        pprint({k:v for k,v in data.items() if k in cities})
+        pprint({k: v for k, v in data.items() if k in cities})
 
 
 def console_app():
