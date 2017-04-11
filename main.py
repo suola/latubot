@@ -41,15 +41,7 @@ StatusUpdate = namedtuple('StatusUpdate', 'age txt')
 
 def run_server(city_filter, tweet=False, use_json=False, tweet_1st_update=False,
                simulate=False):
-
-    # Send or print msg
     print('restarting bot')
-    if tweet:
-        try:
-            tweeter.send('(re)starting bot')
-        except tweepy.error.TweepError as e:
-            print('error tweeting: %s' % e)
-
     ndata = {}
     i_update = 0
     while True:
