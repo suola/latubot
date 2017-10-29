@@ -5,83 +5,50 @@
 - city (oulu, haukipudas)
 - place ("Iinatti 8km"...)
 
-v1/
-v1/{latu,luistelu}
-v1/latu/
-v1/latu/oulu
-v1/latu/oulu?updated=5m
 """
 
-from datetime import datetime
-
-from flask import Flask, jsonify, abort, request
-
-import raw
-import time_utils
-
-app = Flask(__name__)
+from . import raw
+from . import time_utils
 
 
-@app.route('/v1/', methods=['GET'])
-def get_sports():
-    return jsonify(raw.sport_names())
-
-
-@app.route('/v1/<string:sport>/', methods=['GET'])
-def get_areas(sport):
+def get_area(sport, area, raw_response=False, since=None, empty=False):
     sport = sport.lower()
     if sport not in raw.sport_names():
-        abort(404, 'invalid sport "%s"' % sport)
-
-    all_ = request.args.get('all', False)
-    if all_:
-        return jsonify(raw.load_areas(sport))
-    else:
-        return jsonify(raw.area_names(sport))
-
-
-@app.route('/v1/<string:sport>/<string:area>/', methods=['GET'])
-def get_area(sport, area):
-    sport = sport.lower()
-    if sport not in raw.sport_names():
-        abort(404, 'invalid sport "%s"' % sport)
+        raise ValueError(f'Invalid sport {sport}')
 
     area = area.upper()
     if area not in raw.area_names():
-        abort(404, 'invalid area "%s"' % area)
+        raise ValueError(f'Invalid area {area}')
 
     data = raw.load_area(area, sport)
 
-    # ?raw=True to return raw data
-    if request.args.get('raw', False):
-        return jsonify(data)
+    if raw_response:
+        return data
 
     # From now only interested in parsed date, raw is dropped
-    dates = pick_dates(data)
+    dates = _pick_dates(data)
 
-    # ?since=<timespan> to include newest elements only
-    since = request.args.get('since', None)
     if since:
-        dates = filter_data(dates, _time_filter(since))
+        dates = _filter_data(dates, _time_filter(since))
 
-    # all=True to include empty items as well
-    if not request.args.get('all', False):
-        dates = remove_empty(dates)
+    # empty=True to include empty items as well
+    if not empty:
+        dates = _remove_empty(dates)
 
-    return jsonify(dates)
+    return dates
 
 
-def pick_dates(data):
+def _pick_dates(data):
     return {a: {k: v.get('_date') for k, v in d.items()}
             for a, d in data.items()}
 
 
-def filter_data(data, f):
+def _filter_data(data, f):
     nd = {a: {k: v for k, v in d.items() if f(v)} for a, d in data.items()}
     return nd
 
 
-def remove_empty(data):
+def _remove_empty(data):
     """Remove 1st empty places, then cities."""
     r = {a: {k: v for k, v in d.items() if v} for a, d in data.items()}
     r = {a: d for a, d in r.items() if d}
@@ -114,7 +81,3 @@ def _time_filter(since):
             dt = datetime.strptime(v, raw.DATE_FMT)
             return time_utils.is_within(dt, mins)
     return f
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
