@@ -12,8 +12,6 @@ v1/latu/oulu
 v1/latu/oulu?updated=5m
 """
 
-from datetime import datetime
-
 from flask import Flask, jsonify, abort, request
 
 from . import api
