@@ -1,48 +1,41 @@
+"""Status updater using backend python api."""
 import logging
 import json
 
-import requests
-
 import tweeter
 
+from source import api
 
 logger = logging.getLogger(__name__)
 dumps = json.dumps
 
 
-def do_update(sports=None, areas=None, since='8M', url=None):
+def do_update(sports=None, areas=None, since='8M'):
     """Update main function."""
     sports = sports or ('latu',)
     areas = areas or ('oulu',)
-    url = url or 'http://localhost:5000/v1'
 
     for sport in sports:
         for area in areas:
-            do_update_area_sport(sport, area, since, url)
+            do_update_area_sport(sport, area, since)
 
 
-def do_update_area_sport(sport, area, since, base_url):
+def do_update_area_sport(sport, area, since):
     """Update specific, sport, area combo."""
-    url = '/'.join((base_url, f'{sport}/{area}/'))
-    if since:
-        url += f'?since={since}'
-
-    resp = requests.get(url)
-
-    if resp.status_code != 200:
-        logger.error(resp.text)
+    try:
+        data = api.get_area(sport, area, since=since)
+    except ValueError as e:
+        logger.error(e)
         return
-
-    data = resp.json()
-    # print(dumps(data))
-    # return
 
     twitter_api_keys = get_twitter_api_keys(sport, area)
     twitter_api = tweeter.get_api(twitter_api_keys)
 
     for city in data:
         for city, update in data[city].items():
-            tweeter.send(twitter_api, f'{city}: {update}')
+            # msg = f'({area.capitalize()}) {city}, {update}'
+            msg = f'{city}, {update}'
+            tweeter.send(twitter_api, msg)
 
 
 def get_twitter_api_keys(sport, area):
