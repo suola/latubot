@@ -2,12 +2,16 @@
 import logging
 import json
 
-import tweeter
-
-from source import api
+from . import tweeter
+from .source import api
 
 logger = logging.getLogger(__name__)
 dumps = json.dumps
+
+
+def do_update_aws_lambda(event, context):
+    logger.debug("%s" % event)
+    do_update()
 
 
 def do_update(sports=None, areas=None, since='8M'):
