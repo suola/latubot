@@ -2,9 +2,12 @@
 
 import sys
 from collections import namedtuple
+import time
 import logging
 
 import tweepy
+
+from . import cfg
 
 
 # Twitter keys
@@ -24,12 +27,19 @@ def get_api(keys: TwitterKeys):
     return api
 
 
-def send(api, msg, dryrun=True):
+def get_my_updates(api, count=50):
+    """Get last count my updates."""
+    me = api.me()
+    return api.user_timeline(id=me.id, count=count)
+
+
+def send(api, msg):
     """Send tweet w/ authenticated api."""
-    if dryrun:
+    if api is None:
         print(f'tweet: {msg}')
     else:
         api.update_status(msg)
+        time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
 
 
 def keys_from_str(s):

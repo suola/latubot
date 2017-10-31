@@ -13,80 +13,43 @@ Structure for AREA
 """
 
 from functools import partial
-import datetime
 import logging
 
 import requests
 from lxml import html
 import json
 
-# Configuration
-BASE = "https://kunto.softroi.fi/LATU{area}/"
-STATUS_LATU = BASE + "latuui/loadLatuStatusListAccordion.html"
-STATUS_LUISTELU = BASE + "latuui/loadLuisteluStatusListAccordion.html"
-LATEST = BASE + "latuui/loadLatuNewMarks.html"
-MESSAGES = BASE + "latuui/loadLatuInfoMessageList.html"
-IDS = BASE + "data/oulu/latu2shpid.json"
-GML = BASE + "data/oulu/ladut.gml"
-# Script urls for other resources were found
-ACCORDION_SCRIPT = BASE + "script/frLatuMapAccordion.jsp"
-
-# areas w/ service (how to get this list dynamically?)
-_AREAS = ('OULU', 'SYOTE', 'SOTKAMOVUOKATTI', 'KOLI', 'YLIVIESKA', 'TORNIO',
-          'PIEKSAMAKI', 'KUOPIO', 'KAJAANI', 'HAMEENLINNA', 'KIRKKONUMMI',
-          'VARKAUS', 'HYVINKAA', 'NIVALA', 'RAASEPORI',)
-
-_DEFAULT_AREA = 'OULU'
-
-# available sports
-_SPORTS = {
-        'latu': {
-            'url': STATUS_LATU,
-            'areas': _AREAS,
-            'acc_label': 'accordion'
-            },
-        'luistelu': {
-            'url': STATUS_LUISTELU,
-            'areas': _AREAS,
-            'acc_label': 'accordion2'
-            },
-        }
-
-
-_DEFAULT_SPORT = 'latu'
-
-# Date format used internally
-DATE_FMT = '%Y-%m-%d %H:%M'
+from latubot import cfg
+from . import time_utils
 
 logger = logging.getLogger(__name__)
 
 
+settings = cfg.load()
+
+
 def sport_names():
-    return list(_SPORTS.keys())
+    return list(settings['sports'].keys())
 
 
-def area_names(sport=None):
-    sport = sport or _DEFAULT_SPORT
-    return _SPORTS[sport]['areas']
+def area_names(sport=cfg.DEFAULT_SPORT):
+    return settings['sports'][sport]['areas']
 
 
-def load_areas(sport=None):
-    sport = sport or _DEFAULT_SPORT
+def load_areas(sport=cfg.DEFAULT_SPORT):
     return {area: load_area(area, sport) for area in area_names(sport)}
 
 
-def load_area(area=None, sport=None):
-    area = area or _DEFAULT_AREA
+def load_area(area=cfg.DEFAULT_AREA, sport=cfg.DEFAULT_SPORT):
     if area not in area_names():
         raise ValueError('invalid area %s' % area)
 
-    sport = sport or _DEFAULT_SPORT
     if sport not in sport_names():
         raise ValueError('invalid sport %s' % sport)
 
-    base_url = _SPORTS[sport]['url']
-    url = base_url.format(area=area)
-    parser = partial(_parse_update_html, acc_label=_SPORTS[sport]['acc_label'])
+    url = cfg.url(settings, area, sport)
+    parser = partial(_parse_update_html,
+                     parse_opts=settings['sports'][sport]['html_parser_opts'])
     return _load_updates_from_server(url, parser)
 
 
@@ -98,13 +61,13 @@ def _load_updates_from_server(url, parser):
     return data
 
 
-def _parse_update_html(text, acc_label):
+def _parse_update_html(text, parse_opts):
     # Format
     # html.body.div.h3.a kaupunki
     # html.body.div.div<id="l_g9">.span[2].text name
     # html.body.div.div<id="l_g9">.ul.li.text status
 
-    # latu updates use 'accordion', luistelu 'accordion2'
+    acc_label = parse_opts['acc_label']
     assert acc_label in ('accordion', 'accordion2')
     tree = html.fromstring(text)
     data = {}
@@ -143,30 +106,15 @@ def _parse_status_from_element_old(pos):
 
 
 def _parse_status_text(s):
-    d = {'raw': s}
-    date = _get_date(s)
+    d = {'txt': s}
+    date = time_utils.get_date(s)
     if date:
-        d['_date'] = date.strftime(DATE_FMT)
+        d['date'] = date.strftime(cfg.DATE_FMT)
     return d
 
 
-def _get_date(s):
-    """Get date from s, None if fails."""
-    _fmt = 'Kunnostettu: %d.%m. klo %H:%M'
-    try:
-        date = datetime.datetime.strptime(s, _fmt)
-    except ValueError:
-        return None
-
-    now = datetime.datetime.now()
-    new_date = date.replace(year=now.year)
-    if new_date > now:
-        new_date = date.replace(year=now.year-1)
-    return new_date
-
-
 def _dump_all(fn='areas.json', sport=None):
-    sport = sport or _DEFAULT_SPORT
+    sport = sport or cfg._EFAULT_SPORT
     json.dump(load_areas(sport), open(fn, 'w'))
 
 

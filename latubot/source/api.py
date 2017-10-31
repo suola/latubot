@@ -11,6 +11,7 @@ from datetime import datetime
 
 from . import raw
 from . import time_utils
+from .. import cfg
 
 
 def get_area(sport, area, raw_response=False, since=None, empty=False):
@@ -20,29 +21,21 @@ def get_area(sport, area, raw_response=False, since=None, empty=False):
 
     area = area.upper()
     if area not in raw.area_names():
-        raise ValueError(f'Invalid area {area}')
+        raise ValueError(f'Invalid area {area} not in {raw.area_names()}')
 
     data = raw.load_area(area, sport)
 
     if raw_response:
         return data
 
-    # From now only interested in parsed date, raw is dropped
-    dates = _pick_dates(data)
-
     if since:
-        dates = _filter_data(dates, _time_filter(since))
+        data = _filter_data(data, _time_filter(since))
 
     # empty=True to include empty items as well
     if not empty:
-        dates = _remove_empty(dates)
+        data = _remove_empty(data)
 
-    return dates
-
-
-def _pick_dates(data):
-    return {a: {k: v.get('_date') for k, v in d.items()}
-            for a, d in data.items()}
+    return data
 
 
 def _filter_data(data, f):
@@ -60,26 +53,17 @@ def _remove_empty(data):
 def _basic_filter(all_):
     """If all_=True include all items, otherwise only ones with date."""
     def f(v):
-        return all_ or '_date' in v
+        return all_ or 'date' in v
     return f
 
 
 def _time_filter(since):
-    if since.endswith('m'):
-        mins = int(since[:-1])
-    elif since.endswith('h'):
-        mins = 60 * int(since[:-1])
-    elif since.endswith('d'):
-        mins = 24*60 * int(since[:-1])
-    elif since.endswith('M'):
-        mins = 31*24*60 * int(since[:-1])
-    else:
-        mins = int(since)
+    mins = time_utils.since_to_mins(since)
 
     def f(v):
-        if v is None:
+        if 'date' not in v:
             return False
         else:
-            dt = datetime.strptime(v, raw.DATE_FMT)
+            dt = datetime.strptime(v['date'], cfg.DATE_FMT)
             return time_utils.is_within(dt, mins)
     return f
