@@ -9,7 +9,7 @@
         "events": [
             {
                 "function": "latubot.updater.do_update_aws_lambda",
-                "expression": "rate(5 minutes)"
+                "expression": "rate(15 minutes)"
             }
         ]
     }

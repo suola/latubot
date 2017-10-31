@@ -15,7 +15,7 @@ dumps = json.dumps
 def do_update_aws_lambda(event, context):
     """Entry point for AWS lambda function."""
     logger.debug("aws triggered by event %s" % event)
-    do_update(since='5m')
+    do_update(since='15m')
 
 
 def do_update(sports=None, areas=None, since='8M', dry_run=False):
