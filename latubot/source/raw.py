@@ -32,15 +32,15 @@ def sport_names():
     return list(settings['sports'].keys())
 
 
-def area_names(sport=cfg.DEFAULT_SPORT):
+def area_names(sport: str=cfg.DEFAULT_SPORT):
     return settings['sports'][sport]['areas']
 
 
-def load_areas(sport=cfg.DEFAULT_SPORT):
+def load_areas(sport: str=cfg.DEFAULT_SPORT):
     return {area: load_area(area, sport) for area in area_names(sport)}
 
 
-def load_area(area=cfg.DEFAULT_AREA, sport=cfg.DEFAULT_SPORT):
+def load_area(area: str=cfg.DEFAULT_AREA, sport: str=cfg.DEFAULT_SPORT):
     if area not in area_names():
         raise ValueError('invalid area %s' % area)
 
@@ -53,7 +53,7 @@ def load_area(area=cfg.DEFAULT_AREA, sport=cfg.DEFAULT_SPORT):
     return _load_updates_from_server(url, parser)
 
 
-def _load_updates_from_server(url, parser):
+def _load_updates_from_server(url: str, parser):
     r = requests.get(url)
     r.raise_for_status()
     data = parser(r.text)
@@ -61,7 +61,7 @@ def _load_updates_from_server(url, parser):
     return data
 
 
-def _parse_update_html(text, parse_opts):
+def _parse_update_html(text: str, parse_opts: dict):
     # Format
     # html.body.div.h3.a kaupunki
     # html.body.div.div<id="l_g9">.span[2].text name
@@ -85,7 +85,7 @@ def _parse_update_html(text, parse_opts):
     return data
 
 
-def _parse_status_from_element(pos):
+def _parse_status_from_element(pos: html.HtmlElement):
     """Get status from Element."""
     # varies per city
     status_list = pos.xpath('following-sibling::ul')
@@ -95,7 +95,7 @@ def _parse_status_from_element(pos):
     return _parse_status_text(status)
 
 
-def _parse_status_from_element_old(pos):
+def _parse_status_from_element_old(pos: html.HtmlElement):
     """Get status from Element."""
     # old version, worked well with Oulu data
     status_list = pos.xpath('following-sibling::ul/li')
@@ -105,7 +105,7 @@ def _parse_status_from_element_old(pos):
     return status
 
 
-def _parse_status_text(s):
+def _parse_status_text(s: str):
     d = {'txt': s}
     date = time_utils.get_date(s)
     if date:
@@ -113,8 +113,8 @@ def _parse_status_text(s):
     return d
 
 
-def _dump_all(fn='areas.json', sport=None):
-    sport = sport or cfg._EFAULT_SPORT
+def _dump_all(fn: str='areas.json', sport: str=None):
+    sport = sport or cfg.DEFAULT_SPORT
     json.dump(load_areas(sport), open(fn, 'w'))
 
 

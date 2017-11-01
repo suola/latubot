@@ -60,7 +60,18 @@ def do_update_area_sport(sport, area, since, dry_run=False):
         for city, update in data[city].items():
             if should_send_update(my_tweets, city, update):
                 msg = f"{city}; {update['txt']}"
+                msg = add_hashtags(msg, area)
                 tweeter.send(twitter_api, msg)
+
+
+def add_hashtags(msg: str, area: str, max_length: int=140):
+    """Add hashtags if length allows."""
+    tags = ('#hiihto', f'#{area.lower()}')
+    for tag in tags:
+        if len(msg) + len(tag) + 1 <= max_length:
+            msg = ' '.join((msg, tag))
+
+    return msg[:max_length]
 
 
 def should_send_update(my_tweets, city, update):

@@ -7,11 +7,8 @@
 
 """
 
-from datetime import datetime
-
 from . import raw
 from . import time_utils
-from .. import cfg
 
 
 def get_area(sport, area, raw_response=False, since=None, empty=False):

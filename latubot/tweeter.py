@@ -31,14 +31,13 @@ def get_api(keys: TwitterKeys):
     return api
 
 
-def get_my_updates(api, count=50):
+def get_my_updates(api: tweepy.API, count: int=50):
     """Get last count my updates."""
     return api.user_timeline(count=count)
 
 
-def send(api, msg):
+def send(api: tweepy.API, msg: str):
     """Send tweet w/ authenticated api."""
-    msg = add_hashtags(msg, area)
     if api is None:
         print(f'tweet: {msg}')
     else:
@@ -46,19 +45,9 @@ def send(api, msg):
         time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
 
 
-def add_hashtags(msg, area, max_length=140):
-    """Add hashtags if length allows."""
-    tags = ('#hiihto', f'#{area.lower()}')
-    for tag in tags:
-        if len(msg) + len(tag) + 1 <= max_length:
-            msg = ' '.join((msg, tag))
-
-    return msg[:max_length]
-
-
-def keys_from_str(s):
+def keys_from_str(s: str):
     """Whitespace separated string "cons_key cons_sec acc_key acc_sec"."""
-    return TwitterKeys(s.split())
+    return TwitterKeys(*s.split())
 
 
 if __name__ == "__main__":
@@ -66,8 +55,8 @@ if __name__ == "__main__":
     api = get_api(keys)
     if len(sys.argv) > 1:
         # print(sys.argv[1])
-        send(sys.argv[1])
+        send(api, sys.argv[1])
     else:
         # Ask for msg, tweet it
         msg = input('msg> ')
-        send(msg)
+        send(api, msg)

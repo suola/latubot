@@ -73,7 +73,7 @@ def load():
     return cfg
 
 
-def get_twitter_api_keys(sport, area):
+def get_twitter_api_keys(sport: str, area: str):
     """Load twitter api keys.
 
     API keys for twitter account for a sport + area must be defined in an
@@ -100,5 +100,5 @@ def get_configured():
         yield m.group('sport'), m.group('area')
 
 
-def url(c, area, sport):
+def url(c: dict, area: str, sport: str):
     return c['baseurl'].format(area=area) + c['sports'][sport]['url']

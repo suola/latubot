@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 
-def is_within(td, mins):
+def is_within(td: datetime, mins: int):
     """is td within mins minutes from now?"""
     assert mins >= 0
     td_ref = datetime.now() - timedelta(minutes=mins)
