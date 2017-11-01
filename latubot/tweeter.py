@@ -22,7 +22,11 @@ def get_api(keys: TwitterKeys):
     """Get tweepy api."""
     auth = tweepy.OAuthHandler(keys.consumer_key, keys.consumer_secret)
     auth.set_access_token(keys.access_key, keys.access_secret)
-    api = tweepy.API(auth)
+    api = tweepy.API(
+            auth,
+            wait_on_rate_limit=True,
+            wait_on_rate_limit_notify=True
+            )
     logger.debug('Authenticated w/ twitter API')
     return api
 
