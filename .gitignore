@@ -4,6 +4,7 @@
 local/
 latubot.ini
 .idea/
+.mypy_cache/
 
 *.swp
 
