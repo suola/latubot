@@ -38,11 +38,22 @@ def get_my_updates(api, count=50):
 
 def send(api, msg):
     """Send tweet w/ authenticated api."""
+    msg = add_hashtags(msg, area)
     if api is None:
         print(f'tweet: {msg}')
     else:
         api.update_status(msg)
         time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
+
+
+def add_hashtags(msg, area, max_length=140):
+    """Add hashtags if length allows."""
+    tags = ('#hiihto', f'#{area.lower()}')
+    for tag in tags:
+        if len(msg) + len(tag) + 1 <= max_length:
+            msg = ' '.join((msg, tag))
+
+    return msg[:max_length]
 
 
 def keys_from_str(s):

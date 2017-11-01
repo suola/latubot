@@ -61,9 +61,8 @@ def _time_filter(since):
     mins = time_utils.since_to_mins(since)
 
     def f(v):
-        if 'date' not in v:
+        try:
+            return time_utils.is_within(v['date'], mins)
+        except KeyError:
             return False
-        else:
-            dt = datetime.strptime(v['date'], cfg.DATE_FMT)
-            return time_utils.is_within(dt, mins)
     return f

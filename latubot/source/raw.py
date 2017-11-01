@@ -109,7 +109,7 @@ def _parse_status_text(s):
     d = {'txt': s}
     date = time_utils.get_date(s)
     if date:
-        d['date'] = date.strftime(cfg.DATE_FMT)
+        d['date'] = date
     return d
 
 

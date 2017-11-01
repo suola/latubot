@@ -57,52 +57,47 @@ def do_update_area_sport(sport, area, since, dry_run=False):
         my_tweets = tweeter.get_my_updates(twitter_api, count=50)
 
     for city in data:
-        for city, place in data[city].items():
-            msg = f"{city}; {place['txt']}"
-            msg = add_hashtags(msg, area)
-            if should_send_update(my_tweets, msg, city):
+        for city, update in data[city].items():
+            if should_send_update(my_tweets, city, update):
+                msg = f"{city}; {update['txt']}"
                 tweeter.send(twitter_api, msg)
 
 
-def add_hashtags(msg, area, max_length=140):
-    """Add hashtags if length allows."""
-    tags = ('#hiihto', f'#{area.lower()}')
-    for tag in tags:
-        if len(msg) + len(tag) + 1 <= max_length:
-            msg = ' '.join((msg, tag))
+def should_send_update(my_tweets, city, update):
+    """Whether should send update or not?.
 
-    return msg
-
-
-def should_send_update(my_tweets, msg, city):
-    """Whether should send update or not?."""
+    Check when the last update about current city was tweeted,
+    and if it was too recently, don't send this update.
+    """
     if my_tweets is None:
         return True
 
-    now = datetime.datetime.utcnow()
+    try:
+        update_ts = update['date']
+    except KeyError:
+        logger.warning(f'no timestamp in {update["txt"]}')
+        update_ts = datetime.datetime.utcnow()
+
     min_age = datetime.timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
 
-    for update in my_tweets:
-        if update.text == msg:
-            logger.info(f"'{msg}' already tweeted at {update.created_at}")
-            return False
-        elif update.text.startswith(city):
-            # ix is dependent on the tweet message syntax
-            ix = len(city) + len('; ')
-            utext = update.text[ix:]
+    for tweet in my_tweets:
+        if not tweet.text.startswith(city):
+            continue
 
-            # skip if tweeted about this place too recently
-            utext_without_tags = utext.split('#', 1)[0].strip()
-            update_date = time_utils.get_date(utext_without_tags)
-            age = now - update_date
-            # age = delta.seconds / 60
-            if age < min_age:
-                logger.info(f"{msg} - {age} (< {min_age}) mins "
-                            "since prev update, skip")
-                return False
-            else:
-                logger.info(f"{msg} - {age} (>= {min_age}) mins "
-                            "since prev update")
+        # ix is dependent on the tweet message syntax
+        ix = len(city) + len('; ')
+        tweeted_update = tweet.text[ix:]
+        tweeted_update_wout_tags = tweeted_update.split('#', 1)[0].strip()
+        tweeted_update_ts = time_utils.get_date(tweeted_update_wout_tags)
+        age = update_ts - tweeted_update_ts
+
+        if age < min_age:
+            logger.info(f"'{update['txt']}' - {age} (< {min_age}) mins "
+                        "since prev update, skip")
+            return False
+        else:
+            logger.info(f"'{update['txt']}' - {age} (>= {min_age}) mins "
+                        "since prev update")
 
     return True
 
