@@ -33,8 +33,7 @@ def get_api(keys: TwitterKeys):
 
 def get_my_updates(api, count=50):
     """Get last count my updates."""
-    me = api.me()
-    return api.user_timeline(id=me.id, count=count)
+    return api.user_timeline(count=count)
 
 
 def send(api, msg):
