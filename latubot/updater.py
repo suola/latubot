@@ -80,31 +80,34 @@ def should_send_update(my_tweets, msg, city):
         return True
 
     now = datetime.datetime.utcnow()
-    min_age = cfg.MIN_MINS_BETWEEN_UPDATES
+    min_age = datetime.timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
 
     for update in my_tweets:
-        # this is dependent on the tweet message syntax
-        ix = len(city) + 2
-        ucity, utext = update.text[:ix], update.text[ix:]
+        if update.text == msg:
+            logger.info(f"'{msg}' already tweeted at {update.created_at}")
+            return False
+        elif update.text.startswith(city):
+            # ix is dependent on the tweet message syntax
+            ix = len(city) + len('; ')
+            utext = update.text[ix:]
 
-        if city == ucity:
-            # skip if already tweeted this exact msg or tweeted too
-            # recently
-            if msg == utext:
-                logger.info(f"{msg} already tweeted")
-                return False
-
-            update_date = time_utils.get_date(update.text[len(city) + 2:])
-            delta = now - update_date
-            age = delta.seconds / 60
+            # skip if tweeted about this place too recently
+            utext_without_tags = utext.split('#', 1)[0].strip()
+            update_date = time_utils.get_date(utext_without_tags)
+            age = now - update_date
+            # age = delta.seconds / 60
             if age < min_age:
                 logger.info(f"{msg} - {age} (< {min_age}) mins "
                             "since prev update, skip")
                 return False
+            else:
+                logger.info(f"{msg} - {age} (>= {min_age}) mins "
+                            "since prev update")
 
     return True
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    do_update(since='5m')
+    # do_update(since='24h', areas=('OULU',), dry_run=False)
+    do_update(since='24h', dry_run=False)
