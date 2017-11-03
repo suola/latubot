@@ -57,9 +57,10 @@ def do_update_area_sport(sport, area, since, dry_run=False):
         my_tweets = tweeter.get_my_updates(twitter_api, count=50)
 
     for city in data:
-        for city, update in data[city].items():
-            if should_send_update(my_tweets, city, update):
-                msg = f"{city}; {update['txt']}"
+        for place, update in data[city].items():
+            location = f"{city}, {place}"
+            if should_send_update(my_tweets, location, update):
+                msg = f"{location}; {update['txt']}"
                 msg = add_hashtags(msg, area)
                 tweeter.send(twitter_api, msg)
 
@@ -74,10 +75,10 @@ def add_hashtags(msg: str, area: str, max_length: int=140):
     return msg[:max_length]
 
 
-def should_send_update(my_tweets, city, update):
+def should_send_update(my_tweets, location, update):
     """Whether should send update or not?.
 
-    Check when the last update about current city was tweeted,
+    Check when the last update about current location was tweeted,
     and if it was too recently, don't send this update.
     """
     if my_tweets is None:
@@ -92,11 +93,11 @@ def should_send_update(my_tweets, city, update):
     min_age = datetime.timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
 
     for tweet in my_tweets:
-        if not tweet.text.startswith(city):
+        if not tweet.text.startswith(location):
             continue
 
         # ix is dependent on the tweet message syntax
-        ix = len(city) + len('; ')
+        ix = len(location) + len('; ')
         tweeted_update = tweet.text[ix:]
         tweeted_update_wout_tags = tweeted_update.split('#', 1)[0].strip()
         tweeted_update_ts = time_utils.get_date(tweeted_update_wout_tags)
