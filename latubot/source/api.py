@@ -9,16 +9,17 @@
 
 from . import raw
 from . import time_utils
+from . import cfg
 
 
 def get_area(sport, area, raw_response=False, since=None, empty=False):
     sport = sport.lower()
-    if sport not in raw.sport_names():
+    if sport not in cfg.sport_names():
         raise ValueError(f'Invalid sport {sport}')
 
     area = area.upper()
-    if area not in raw.area_names():
-        raise ValueError(f'Invalid area {area} not in {raw.area_names()}')
+    if area not in cfg.area_names(sport):
+        raise ValueError(f'Invalid area {area}')
 
     data = raw.load_area(area, sport)
 

@@ -7,6 +7,7 @@ import datetime
 from latubot import cfg
 from latubot import tweeter
 from latubot.source import api, time_utils
+from latubot.source import cfg as source_cfg
 
 logger = logging.getLogger(__name__)
 dumps = json.dumps
@@ -31,8 +32,8 @@ def do_update(sports=None, areas=None, since='8M', dry_run=False):
                 do_update_area_sport(sport, area, since)
 
     else:
-        sports = sports or cfg._ALL_SPORTS
-        areas = areas or cfg._ALL_AREAS
+        sports = sports or source_cfg._ALL_SPORTS
+        areas = areas or source_cfg._ALL_AREAS
         for sport in sports:
             for area in areas:
                 print(f" {sport} - {area}")

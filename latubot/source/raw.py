@@ -19,7 +19,7 @@ import requests
 from lxml import html, etree
 import json
 
-from latubot import cfg
+from latubot.source import cfg
 from latubot.source import time_utils
 
 logger = logging.getLogger(__name__)
@@ -29,23 +29,15 @@ dumps = partial(json.dumps, cls=time_utils.DateTimeEncoder)
 settings = cfg.load()
 
 
-def sport_names():
-    return list(settings['sports'].keys())
-
-
-def area_names(sport: str=cfg.DEFAULT_SPORT):
-    return settings['sports'][sport]['areas']
-
-
 def load_areas(sport: str=cfg.DEFAULT_SPORT):
-    return {area: load_area(area, sport) for area in area_names(sport)}
+    return {area: load_area(area, sport) for area in cfg.area_names(sport)}
 
 
 def load_area(area: str=cfg.DEFAULT_AREA, sport: str=cfg.DEFAULT_SPORT):
-    if area not in area_names():
+    if area not in cfg.area_names():
         raise ValueError('invalid area %s' % area)
 
-    if sport not in sport_names():
+    if sport not in cfg.sport_names():
         raise ValueError('invalid sport %s' % sport)
 
     updates = _load_updates(area, sport)
@@ -67,6 +59,9 @@ def _load_updates(area, sport):
 def _load_latest(area, sport):
     """Load latest updates for (area, sport) from the server."""
     url = cfg.url_new(settings, area, sport)
+    if url is None:
+        return {}
+
     try:
         return _load_updates_from_server(url, _parse_new_marks_html)
     except requests.exceptions.RequestException:
