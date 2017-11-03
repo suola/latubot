@@ -56,6 +56,7 @@ def load():
             'latu': {
                 "areas": _SUPPORTED_AREAS,
                 "url": "latuui/loadLatuStatusListAccordion.html",
+                "url_new": "latuui/loadLatuNewMarks.html",
                 'html_parser_opts': {
                     'acc_label': 'accordion',
                     },
@@ -63,6 +64,7 @@ def load():
             'luistelu': {
                 "areas": _SUPPORTED_AREAS,
                 "url": "latuui/loadLuisteluStatusListAccordion.html",
+                "url_new": None,
                 'html_parser_opts': {
                     'acc_label': 'accordion2',
                     }
@@ -102,3 +104,7 @@ def get_configured():
 
 def url(c: dict, area: str, sport: str):
     return c['baseurl'].format(area=area) + c['sports'][sport]['url']
+
+
+def url_new(c: dict, area: str, sport: str):
+    return c['baseurl'].format(area=area) + c['sports'][sport]['url_new']

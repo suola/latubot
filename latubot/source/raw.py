@@ -16,15 +16,16 @@ from functools import partial
 import logging
 
 import requests
-from lxml import html
+from lxml import html, etree
 import json
 
 from latubot import cfg
-from . import time_utils
+from latubot.source import time_utils
 
 logger = logging.getLogger(__name__)
 
 
+dumps = partial(json.dumps, cls=time_utils.DateTimeEncoder)
 settings = cfg.load()
 
 
@@ -47,10 +48,62 @@ def load_area(area: str=cfg.DEFAULT_AREA, sport: str=cfg.DEFAULT_SPORT):
     if sport not in sport_names():
         raise ValueError('invalid sport %s' % sport)
 
+    updates = _load_updates(area, sport)
+    latest = _load_latest(area, sport)
+    merged = _merge_updates(updates, latest)
+
+    return merged
+
+
+def _load_updates(area, sport):
+    """Load all updates for (area, sport) from the server."""
     url = cfg.url(settings, area, sport)
-    parser = partial(_parse_update_html,
-                     parse_opts=settings['sports'][sport]['html_parser_opts'])
+    parser = partial(
+        _parse_update_html,
+        parse_opts=settings['sports'][sport]['html_parser_opts'])
     return _load_updates_from_server(url, parser)
+
+
+def _load_latest(area, sport):
+    """Load latest updates for (area, sport) from the server."""
+    url = cfg.url_new(settings, area, sport)
+    try:
+        return _load_updates_from_server(url, _parse_new_marks_html)
+    except requests.exceptions.RequestException:
+        logger.debug('failed to load latest for %s, %s', area, sport)
+        return {}
+
+
+def _merge_updates(updates, latest):
+    """Merge latest updates into regular updates.
+
+    Sometimes latest updates contain updates not found in regular updates.
+    Combine the two.
+    """
+    if not latest:
+        return updates
+
+    merged = updates.copy()
+    for city in merged:
+        for place in merged[city]:
+            if place in latest:
+                logger.debug('replace %s-%s \n  "%s" -> "%s"',
+                             city, place, merged[city][place], latest[place])
+                merged[city][place] = _pick_better(
+                        merged[city][place], latest[place])
+    return merged
+
+
+def _pick_better(u1, u2):
+    """Pick better of the two updates."""
+    if 'date' in u1 and 'date' not in u2:
+        return u1
+    elif 'date' in u2 and 'date' not in u1:
+        return u2
+    elif 'date' in u1 and 'date' in u2:
+        return u1 if u1['date'] > u2['date'] else u2
+    else:
+        return u2
 
 
 def _load_updates_from_server(url: str, parser):
@@ -105,6 +158,23 @@ def _parse_status_from_element_old(pos: html.HtmlElement):
     return status
 
 
+def _parse_new_marks_html(text: str):
+    """Parse loadLatuNewMarks.html page."""
+    # Format
+    # html.body.div.a name
+    # html.body.div.ul.li.text status
+
+    root = etree.HTML(text)
+    data = {}
+    for div in root.iterfind('.//div'):
+        place = div.find('a')
+        update = div.find('ul/li')
+        if place is not None and update is not None:
+            data[place.text.strip()] = _parse_status_text(update.text.strip())
+
+    return data
+
+
 def _parse_status_text(s: str):
     d = {'txt': s}
     date = time_utils.get_date(s)
@@ -119,5 +189,5 @@ def _dump_all(fn: str='areas.json', sport: str=None):
 
 
 if __name__ == "__main__":
-    print(load_area(sport='luistelu'))
-    # _dump_all('all_luistelu.json', sport='luistelu')
+    d1 = load_area(sport='latu')
+    print(dumps(d1))
