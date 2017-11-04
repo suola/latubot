@@ -45,6 +45,10 @@ def do_update_area_sport(sport, area, since, dry_run=False):
         logger.error(e)
         return
 
+    if not data:
+        logger.debug('no updates for %s - %s', sport, area)
+        return
+
     if dry_run:
         twitter_api = None
         my_tweets = None
