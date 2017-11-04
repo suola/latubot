@@ -96,19 +96,23 @@ def _merge_updates(updates, latest):
     """Merge latest updates into regular updates.
 
     Sometimes latest updates contain updates not found in regular updates.
-    Combine the two.
+    Combine the two. Note that latest doesn't have city info at all,
+    need to rely that there are no identical place names in cities.
     """
     if not latest:
         return updates
 
     merged = updates.copy()
+    merged_places = set()
     for city in merged:
         for place in merged[city]:
             if place in latest:
-                logger.debug('replace %s-%s \n  "%s" -> "%s"',
-                             city, place, merged[city][place], latest[place])
+                merged_places.add(place)
                 merged[city][place] = _pick_better(
                         merged[city][place], latest[place])
+    if merged_places:
+        logger.debug('merged latest for %d places', len(merged_places))
+
     return merged
 
 
