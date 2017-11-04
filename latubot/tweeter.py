@@ -1,13 +1,15 @@
 """Send msg on twitter."""
 
 import sys
+import re
 from collections import namedtuple
+from datetime import datetime, timezone
 import time
 import logging
 
 import tweepy
 
-from . import cfg
+from latubot import cfg
 
 
 # Twitter keys
@@ -50,9 +52,44 @@ def keys_from_str(s: str):
     return TwitterKeys(*s.split())
 
 
+def parse_tweet(tweet: tweepy.Status):
+    """Get data from tweet."""
+    text = tweet.text
+    sent = _utc_to_local(tweet.created_at)
+
+    # Try to parse location and date of update from text
+    m = re.match(cfg.TWEET_RE_PATTERN, text)
+    if m:
+        location, date_str, hashtags = m.groups()
+        try:
+            date = datetime.strptime(date_str, cfg.TWEET_TIME_FMT)
+        except ValueError as e:
+            logger.warning('error (%s) parsing date from tweet %s', e, text)
+        else:
+            date = date.replace(year=sent.year)
+            if date > sent:
+                date = date.replace(year=sent.year-1)
+    else:
+        logger.warning('error parsing tweet %s', text)
+        location, date = None, None
+
+    return text, sent, location, date
+
+
+def _utc_to_local(naive_utc_dt):
+    """Convert naive UTC time to naive localtime."""
+    utc_dt = naive_utc_dt.replace(tzinfo=timezone.utc)
+    localtime_dt = utc_dt.astimezone(tz=None)
+    naive_localtime_dt = localtime_dt.replace(tzinfo=None)
+    return naive_localtime_dt
+
+
 if __name__ == "__main__":
-    keys = TwitterKeys(1, 2, 3, 4)
+    # keys = TwitterKeys(1, 2, 3, 4)
+    keys = TwitterKeys(*cfg.get_twitter_api_keys('latu', 'OULU'))
     api = get_api(keys)
+    tweets = get_my_updates(api)
+    ptw = parse_tweet(tweets[0])
     if len(sys.argv) > 1:
         # print(sys.argv[1])
         send(api, sys.argv[1])

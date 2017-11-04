@@ -14,6 +14,14 @@ MIN_MINS_BETWEEN_UPDATES = 30
 # Sleep a while after each sent tweet to avoid spamming
 SECS_TO_SLEEP_AFTER_TWEET = 10
 
+# Tweet format
+# For now cannot separate city and place from tweeted msg, change
+# format if that is a requirement
+TWEET_TIME_FMT = "%d.%m. klo %H:%M"
+TWEET_LOCATION_FMT = "{city}, {place}"
+TWEET_FMT = "{location}; Kunnostettu: {date}"
+TWEET_FMT2 = "{location}; {text}"
+TWEET_RE_PATTERN = "(.*)[;:] Kunnostettu:? (\d\d\.\d\d\. klo \d\d:\d\d)( #.*)?"
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,13 @@
 """Status updater using backend python api."""
 
 import logging
-import json
-import datetime
+from datetime import datetime, timedelta
 
 from latubot import cfg
 from latubot import tweeter
 from latubot.source import api, time_utils
-from latubot.source import cfg as source_cfg
 
 logger = logging.getLogger(__name__)
-dumps = json.dumps
 
 
 def do_update_aws_lambda(event, context):
@@ -32,8 +29,8 @@ def do_update(sports=None, areas=None, since='8M', dry_run=False):
                 do_update_area_sport(sport, area, since)
 
     else:
-        sports = sports or source_cfg._ALL_SPORTS
-        areas = areas or source_cfg._ALL_AREAS
+        sports = sports or api.sport_names()
+        areas = areas or api.area_names()
         for sport in sports:
             for area in areas:
                 print(f" {sport} - {area}")
@@ -43,7 +40,7 @@ def do_update(sports=None, areas=None, since='8M', dry_run=False):
 def do_update_area_sport(sport, area, since, dry_run=False):
     """Update sport, area combo."""
     try:
-        data = api.get_area(sport, area, since=since)
+        data = api.load(sport, area, since=since)
     except ValueError as e:
         logger.error(e)
         return
@@ -59,11 +56,22 @@ def do_update_area_sport(sport, area, since, dry_run=False):
 
     for city in data:
         for place, update in data[city].items():
-            location = f"{city}, {place}"
+            location = cfg.TWEET_LOCATION_FMT.format(city=city, place=place)
             if should_send_update(my_tweets, location, update):
-                msg = f"{location}; {update['txt']}"
-                msg = add_hashtags(msg, area)
+                msg = get_tweet_msg(area, location, update)
                 tweeter.send(twitter_api, msg)
+
+
+def get_tweet_msg(area, location, update):
+    if 'date' in update:
+        date = datetime.strftime(update['date'], cfg.TWEET_TIME_FMT)
+        msg = cfg.TWEET_FMT.format(location=location, date=date)
+    else:
+        msg = cfg.TWEET_FMT2.format(location=location, text=update['txt'])
+
+    msg = add_hashtags(msg, area)
+
+    return msg
 
 
 def add_hashtags(msg: str, area: str, max_length: int=140):
@@ -81,36 +89,43 @@ def should_send_update(my_tweets, location, update):
 
     Check when the last update about current location was tweeted,
     and if it was too recently, don't send this update.
+
+    If updates were stored in a db, that should be used for this.
     """
     if my_tweets is None:
         return True
 
     try:
-        update_ts = update['date']
+        update_dt = update['date']
     except KeyError:
         logger.warning(f'no timestamp in {update["txt"]}')
-        update_ts = datetime.datetime.utcnow()
+        update_dt = datetime.utcnow()
 
-    min_age = datetime.timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
+    min_age = timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
 
+    # Find newest update for the same location, and parse time from
+    # previous update from that. No need to look for older updates, latest
+    # should have the newest update. (Assumption: TWEET_FMT starts with
+    # location)
     for tweet in my_tweets:
-        if not tweet.text.startswith(location):
+        # don't use the following simple version for now, since in some
+        # tweets format has been slightly different. Once format stabilizes,
+        # can go back to simple version
+        # if not tweet.text.startswith(location):
+            # continue
+
+        text, sent_dt, parsed_location, made_dt = tweeter.parse_tweet(tweet)
+
+        if not parsed_location or parsed_location not in location:
             continue
 
-        # ix is dependent on the tweet message syntax
-        ix = len(location) + len('; ')
-        tweeted_update = tweet.text[ix:]
-        tweeted_update_wout_tags = tweeted_update.split('#', 1)[0].strip()
-        tweeted_update_ts = time_utils.get_date(tweeted_update_wout_tags)
-        age = update_ts - tweeted_update_ts
+        # unable to parse date from the tweet
+        if made_dt is None:
+            continue
 
-        if age < min_age:
-            logger.info(f"'{update['txt']}' - {age} (< {min_age}) mins "
-                        "since prev update, skip")
-            return False
-        else:
-            logger.info(f"'{update['txt']}' - {age} (>= {min_age}) mins "
-                        "since prev update")
+        age = update_dt - made_dt
+        logger.info(f"{location} '{update['txt']}' age {age}")
+        return age > min_age
 
     return True
 

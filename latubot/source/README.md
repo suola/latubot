@@ -1,4 +1,7 @@
-# Data source for latubot
+# Data sources for latubot
 
-Provides API for data source. Data is fetched and parsed from softroi web
-sites.
+Provides API for accessing updates from data source(s).
+
+Currently supported data sources:
+
+- kunto

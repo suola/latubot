@@ -7,21 +7,31 @@
 
 """
 
-from . import raw
-from . import time_utils
-from . import cfg
+from latubot.source import kunto
+from latubot.source import time_utils
 
 
-def get_area(sport, area, raw_response=False, since=None, empty=False):
+def sport_names():
+    """Supported sport names."""
+    return kunto.ALL_SPORTS
+
+
+def area_names():
+    """Supported area names."""
+    return kunto.ALL_AREAS
+
+
+def load(sport, area, raw_response=False, since=None, empty=False):
     sport = sport.lower()
-    if sport not in cfg.sport_names():
+    if sport not in sport_names():
         raise ValueError(f'Invalid sport {sport}')
 
     area = area.upper()
-    if area not in cfg.area_names(sport):
+    if area not in area_names():
         raise ValueError(f'Invalid area {area}')
 
-    data = raw.load_area(area, sport)
+    # if new raw data sources are added, unify and combine data here
+    data = kunto.load(sport, area)
 
     if raw_response:
         return data
