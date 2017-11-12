@@ -1,14 +1,32 @@
 # latubot
+
 Bot for ski track maintenance updates
 
-A personal project for hacking around. Updates can be found in Twitter @latubot.
+## Introduction
 
-The following env vars are required if -t is used:
+A personal project for hacking around. Updates can be found in Twitter
+@latubot.
 
-* LATUBOT_TWITTER_CONSUMER_KEY
-* LATUBOT_TWITTER_CONSUMER_SECRET
-* LATUBOT_TWITTER_ACCESS_KEY
-* LATUBOT_TWITTER_ACCESS_SECRET
+Currently supports updates from kunto softroi web pages.
 
-# TODO
-Update for AWS
+## Tweets
+
+Updates into twitter can be enabled by setting environment variables. For
+example, for oulu env var must be named `LATUBOT_KEYS_LATU_OULU` to tweet
+updates for ski tracks. The value of the env var must contain the following
+keys for the twitter account separated by whitespaces:
+
+- consumer key
+- consumer secret
+- access key
+- access secret
+
+All cities with kunto service are listed in
+`latubot/source/kunto.py:ALL_AREAS`.
+
+## Deployment
+
+Deployment as AWS lambda is supported with zappa. AWS configuration must be set
+properly, deployment can then be done with `zappa deploy dev`. Environment
+variables for the supported accounts must be defined either in
+`zappa_settings.json` or defined manually in AWS console.
