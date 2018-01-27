@@ -202,8 +202,8 @@ class Accordion(Kunto):
     def load(self):
         r = requests.get(self.url)
         r.raise_for_status()
-        data = self._parse_html(r.text,
-            parse_opts=self.cfg['html_parser_opts'])
+        data = self._parse_html(
+                r.text, parse_opts=self.cfg['html_parser_opts'])
         logger.debug('read and parsed data from %s' % self.url)
         return data
 
@@ -268,7 +268,7 @@ class Latest(Kunto):
             r.raise_for_status()
         except requests.exceptions.RequestException:
             logger.debug('failed to load latest for %s, %s',
-                    self.sport, self.area)
+                         self.sport, self.area)
             return {}
 
         data = self._parse_html(r.text)
@@ -294,7 +294,6 @@ class Latest(Kunto):
         return data
 
 
-
 # for testing and debugging
 def _load_areas(sport: str=_DEFAULT_SPORT):
     return {area: load_area(sport, area) for area in ALL_AREAS}
@@ -306,8 +305,6 @@ def _dump_all(fn: str='areas.json', sport: str=None):
 
 
 if __name__ == "__main__":
-    from latubot.source import time_utils
-
     logging.basicConfig(level=logging.DEBUG)
     d1 = load(sport='latu')
     print(json.dumps(d1, cls=time_utils.DateTimeEncoder))
