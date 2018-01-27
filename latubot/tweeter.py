@@ -3,11 +3,12 @@
 import sys
 import re
 from collections import namedtuple
-from datetime import datetime, timezone
+from datetime import datetime
 import time
 import logging
 
 import tweepy
+import pytz
 
 from latubot import cfg
 
@@ -78,8 +79,9 @@ def parse_tweet(tweet: tweepy.Status):
 
 def _utc_to_local(naive_utc_dt):
     """Convert naive UTC time to naive localtime."""
-    utc_dt = naive_utc_dt.replace(tzinfo=timezone.utc)
-    localtime_dt = utc_dt.astimezone(tz=None)
+    fin_tz = pytz.timezone('Europe/Helsinki')
+    utc_dt = pytz.utc.localize(naive_utc_dt)
+    localtime_dt = utc_dt.astimezone(fin_tz)
     naive_localtime_dt = localtime_dt.replace(tzinfo=None)
     return naive_localtime_dt
 

@@ -56,3 +56,4 @@ wcwidth==0.1.7
 Werkzeug==0.12
 wsgi-request-logger==0.4.6
 zappa==0.44.3
+pytz==2017.3
