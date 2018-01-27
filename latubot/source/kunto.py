@@ -19,6 +19,8 @@ import json
 import requests
 from lxml import html, etree
 
+from latubot.source import time_utils
+
 logger = logging.getLogger(__name__)
 
 
@@ -168,7 +170,7 @@ class Kunto:
             return None
 
         # guess the missing year
-        now = datetime.now()
+        now = time_utils.now_tz()
         new_date = date.replace(year=now.year)
         if new_date > now:
             new_date = date.replace(year=now.year-1)

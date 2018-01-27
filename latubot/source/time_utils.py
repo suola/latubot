@@ -1,11 +1,21 @@
 from datetime import datetime, timedelta
 import json
 
+import pytz
+
+
+def now_tz():
+    fin_tz = pytz.timezone('Europe/Helsinki')
+    utc_now = datetime.now(pytz.utc)
+    tz_now = utc_now.astimezone(fin_tz)
+    tz_now_naive = tz_now.replace(tzinfo=None)
+    return tz_now_naive
+
 
 def is_within(td: datetime, mins: int):
     """is td within mins minutes from now?"""
     assert mins >= 0
-    td_ref = datetime.now() - timedelta(minutes=mins)
+    td_ref = now_tz() - timedelta(minutes=mins)
     return td > td_ref
 
 

@@ -103,7 +103,7 @@ def should_send_update(my_tweets, location, update):
         update_dt = update['date']
     except KeyError:
         logger.warning(f'no timestamp in {update["txt"]}')
-        update_dt = datetime.utcnow()
+        update_dt = time_utils.now_tz()
 
     min_age = timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES)
 
