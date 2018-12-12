@@ -9,7 +9,7 @@ import logging
 # Minutes that must pass before tweeting a new update - this is to skip too
 # frequent updates that sometimes occur (e.g. updated every 2 mins for 5 times
 # in a row
-MIN_MINS_BETWEEN_UPDATES = 30
+MIN_MINS_BETWEEN_UPDATES = 120
 
 # Sleep a while after each sent tweet to avoid spamming
 SECS_TO_SLEEP_AFTER_TWEET = 10
