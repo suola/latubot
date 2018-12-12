@@ -1,0 +1,4 @@
+tweepy
+pytz
+lxml
+zappa
