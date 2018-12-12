@@ -1,6 +1,6 @@
 """Fetch and parse data from KUNTO servers.
 
-BASE = "https://kunto.softroi.fi/LATU{area}/"
+BASE = "https://kunto.fluentprogress.fi/LATU{area}/"
 STATUS_LATU = BASE + "latuui/loadLatuStatusListAccordion.html"
 STATUS_LUISTELU = BASE + "latuui/loadLuisteluStatusListAccordion.html"
 LATEST = BASE + "latuui/loadLatuNewMarks.html"
@@ -58,7 +58,7 @@ _DEFAULT_SPORT = 'latu'
 
 """Configuration for parsing source data."""
 _settings = {
-    'baseurl': "https://kunto.softroi.fi/LATU{area}/",
+    'baseurl': "https://kunto.fluentprogress.fi/LATU{area}/",
     'sports': {
         'latu': {
             "url_accordion": "latuui/loadLatuStatusListAccordion.html",
@@ -132,7 +132,7 @@ def _pick_better(u1, u2):
 
 class Kunto:
     """Base class for parsing subpages from kunto service."""
-    tbaseurl = "https://kunto.softroi.fi/LATU{area}/"
+    tbaseurl = "https://kunto.fluentprogress.fi/LATU{area}/"
     sports = ('latu', 'luistelu')
 
     def __init__(self, sport, area):
