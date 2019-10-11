@@ -30,3 +30,17 @@ Deployment as AWS lambda is supported with zappa. AWS configuration must be set
 properly, deployment can then be done with `zappa deploy dev`. Environment
 variables for the supported accounts must be defined either in
 `zappa_settings.json` or defined manually in AWS console.
+
+
+## Update packages
+
+(re-create new env to make sure no extra packages are installed)
+
+```
+python3 -m pip install --upgrade pip
+pip install -r root_reqs.txt
+pip freeze > requirements.txt
+echo "latubot==0.0.2" >> requirements.txt
+```
+
+Need to add latubot manually in the requirements.txt
