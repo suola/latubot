@@ -14,6 +14,7 @@ ACCORDION_SCRIPT = BASE + "script/frLatuMapAccordion.jsp"
 import logging
 import re
 from datetime import datetime
+from itertools import chain
 import json
 
 import requests
@@ -89,6 +90,7 @@ def load(sport: str=_DEFAULT_SPORT, area: str=_DEFAULT_AREA):
     # Load data from all sources and merge
     updates = Accordion(sport, area).load()
     latest = Latest(sport, area).load()
+    _log_updates(updates, latest)
     merged = _merge_updates(updates, latest)
 
     return merged
@@ -128,6 +130,22 @@ def _pick_better(u1, u2):
         return u1 if u1['date'] > u2['date'] else u2
     else:
         return u2
+
+
+def _log_updates(updates, latest):
+    """Log updates."""
+    def get_update_dicts(updates_):
+        for update in updates_.values():
+            for city_update in update.values():
+                yield city_update
+
+    def _log_update(update_, source):
+        n = sum(1 for _ in get_update_dicts(update_))
+        n_with_update = sum("date" in update for update in get_update_dicts(update_))
+        logger.info(f"Loaded {n} ({n_with_update}) from {source}")
+
+    _log_update(updates, "accordion")
+    _log_update(latest, "latest")
 
 
 class Kunto:
