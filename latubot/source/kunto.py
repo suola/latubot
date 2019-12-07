@@ -19,6 +19,7 @@ import json
 
 import requests
 from lxml import html, etree
+import dateutil.parser
 
 from latubot.source import time_utils
 
@@ -88,12 +89,17 @@ def load(sport: str=_DEFAULT_SPORT, area: str=_DEFAULT_AREA):
         raise ValueError('invalid sport %s' % sport)
 
     # Load data from all sources and merge
-    updates = Accordion(sport, area).load()
-    latest = Latest(sport, area).load()
-    _log_updates(updates, latest)
-    merged = _merge_updates(updates, latest)
+    new_updates = KuntoNew(sport, area).load()
+    if new_updates:
+        _log_updates((new_updates, "kunto new"))
+        all_updates = new_updates
+    else:
+        updates = Accordion(sport, area).load()
+        latest = Latest(sport, area).load()
+        _log_updates((updates, "accordion"), (latest, "latest"))
+        all_updates = _merge_updates(updates, latest)
 
-    return merged
+    return all_updates
 
 
 def _merge_updates(updates, latest):
@@ -132,7 +138,7 @@ def _pick_better(u1, u2):
         return u2
 
 
-def _log_updates(updates, latest):
+def _log_updates(*updates):
     """Log updates."""
     def get_update_dicts(updates_):
         for update in updates_.values():
@@ -144,8 +150,8 @@ def _log_updates(updates, latest):
         n_with_update = sum("date" in update for update in get_update_dicts(update_))
         logger.info(f"Loaded {n} ({n_with_update}) from {source}")
 
-    _log_update(updates, "accordion")
-    _log_update(latest, "latest")
+    for update in updates:
+        _log_update(*update)
 
 
 class Kunto:
@@ -193,6 +199,47 @@ class Kunto:
         if new_date > now:
             new_date = date.replace(year=now.year-1)
         return new_date
+
+
+class KuntoNew(Kunto):
+    """2019 fall updated format for kunto pages."""
+
+    def load(self):
+        """Load updates from venues page."""
+
+        # Don't use operations-page, it doesn't exist for e.g. Syote
+        venues = requests.get(self.baseurl + "api/venues").json()
+        venues = venues["features"]
+
+        data = {}
+        for venue in venues:
+            v = venue["properties"]
+
+            if v.get("type") != self.sport_type:
+                continue
+
+            city = v["group"]
+            pos = v["name"]
+
+            if city not in data:
+                data[city] = {}
+
+            try:
+                dt = dateutil.parser.isoparse(v["maintainedAt"]).replace(tzinfo=None)
+            except:
+                continue
+
+            txt = f"Kunnostettu: {dt.strftime('%d.%m.klo %H:%M')}"
+            data[city][pos] = {
+                    "date": dt,
+                    "txt": txt
+                    }
+
+        return data
+
+    @property
+    def sport_type(self):
+        return {"latu": "skitrack", "luistelu": "skatefield"}[self.sport]
 
 
 class Accordion(Kunto):

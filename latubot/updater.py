@@ -137,4 +137,4 @@ def should_send_update(my_tweets, location, update):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # do_update(since='24h', areas=('OULU',), dry_run=False)
-    do_update(since='24h', dry_run=False)
+    do_update(since='72h', sports=("LATU",), areas=("OULU",), dry_run=True)

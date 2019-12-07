@@ -2,3 +2,4 @@ tweepy
 pytz
 lxml
 zappa
+python-dateutil>=2.7.0
