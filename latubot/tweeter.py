@@ -63,7 +63,7 @@ def parse_tweet(tweet: tweepy.Status):
     if m:
         location, date_str, hashtags = m.groups()
         try:
-            date = datetime.strptime(date_str, cfg.TWEET_TIME_FMT)
+            date = parse_dt(date_str)
         except ValueError as e:
             logger.warning('error (%s) parsing date from tweet %s', e, text)
         else:
@@ -84,6 +84,16 @@ def _utc_to_local(naive_utc_dt):
     localtime_dt = utc_dt.astimezone(fin_tz)
     naive_localtime_dt = localtime_dt.replace(tzinfo=None)
     return naive_localtime_dt
+
+
+def parse_dt(date_str):
+    """Parse datetime from date_str"""
+    # Prepend current year into both date_str and string to handle
+    # 29.02 on leap year - otherwise strptime assumes year 1900 and
+    # fails
+    fmt = f"%Y.{cfg.TWEET_TIME_FMT}"
+    date_str = f"{datetime.now().year}.{date_str}"
+    return datetime.strptime(date_str, fmt)
 
 
 if __name__ == "__main__":
