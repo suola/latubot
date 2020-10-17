@@ -15,8 +15,8 @@ from latubot import cfg
 
 # Twitter keys
 TwitterKeys = namedtuple(
-        'TwitterKeys',
-        'consumer_key consumer_secret access_key access_secret')
+    "TwitterKeys", "consumer_key consumer_secret access_key access_secret"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +25,12 @@ def get_api(keys: TwitterKeys):
     """Get tweepy api."""
     auth = tweepy.OAuthHandler(keys.consumer_key, keys.consumer_secret)
     auth.set_access_token(keys.access_key, keys.access_secret)
-    api = tweepy.API(
-            auth,
-            wait_on_rate_limit=True,
-            wait_on_rate_limit_notify=True
-            )
-    logger.debug('Authenticated w/ twitter API')
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+    logger.debug("Authenticated w/ twitter API")
     return api
 
 
-def get_my_updates(api: tweepy.API, count: int=50):
+def get_my_updates(api: tweepy.API, count: int = 50):
     """Get last count my updates."""
     return api.user_timeline(count=count)
 
@@ -42,7 +38,7 @@ def get_my_updates(api: tweepy.API, count: int=50):
 def send(api: tweepy.API, msg: str):
     """Send tweet w/ authenticated api."""
     if api is None:
-        print(f'tweet: {msg}')
+        print(f"tweet: {msg}")
     else:
         api.update_status(msg)
         time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
@@ -65,13 +61,13 @@ def parse_tweet(tweet: tweepy.Status):
         try:
             date = parse_dt(date_str)
         except ValueError as e:
-            logger.warning('error (%s) parsing date from tweet %s', e, text)
+            logger.warning("error (%s) parsing date from tweet %s", e, text)
         else:
             date = date.replace(year=sent.year)
             if date > sent:
-                date = date.replace(year=sent.year-1)
+                date = date.replace(year=sent.year - 1)
     else:
-        logger.warning('error parsing tweet %s', text)
+        logger.warning("error parsing tweet %s", text)
         location, date = None, None
 
     return text, sent, location, date
@@ -79,7 +75,7 @@ def parse_tweet(tweet: tweepy.Status):
 
 def _utc_to_local(naive_utc_dt):
     """Convert naive UTC time to naive localtime."""
-    fin_tz = pytz.timezone('Europe/Helsinki')
+    fin_tz = pytz.timezone("Europe/Helsinki")
     utc_dt = pytz.utc.localize(naive_utc_dt)
     localtime_dt = utc_dt.astimezone(fin_tz)
     naive_localtime_dt = localtime_dt.replace(tzinfo=None)
@@ -98,7 +94,7 @@ def parse_dt(date_str):
 
 if __name__ == "__main__":
     # keys = TwitterKeys(1, 2, 3, 4)
-    keys = TwitterKeys(*cfg.get_twitter_api_keys('latu', 'OULU'))
+    keys = TwitterKeys(*cfg.get_twitter_api_keys("latu", "OULU"))
     api = get_api(keys)
     tweets = get_my_updates(api)
     ptw = parse_tweet(tweets[0])
@@ -107,5 +103,5 @@ if __name__ == "__main__":
         send(api, sys.argv[1])
     else:
         # Ask for msg, tweet it
-        msg = input('msg> ')
+        msg = input("msg> ")
         send(api, msg)

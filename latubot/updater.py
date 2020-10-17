@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 def do_update_aws_lambda(event, context):
     """Entry point for AWS lambda function."""
     logger.debug("aws triggered by event %s" % event)
-    do_update(since='15m')
+    do_update(since="15m")
 
 
-def do_update(sports=None, areas=None, since='8M', dry_run=False):
+def do_update(sports=None, areas=None, since="8M", dry_run=False):
     """Update main function."""
     if not dry_run:
         # Update all sport+area pairs w/ configuration
@@ -24,7 +24,7 @@ def do_update(sports=None, areas=None, since='8M', dry_run=False):
             return xs is None or x.upper() in map(str.upper, xs)
 
         for sport, area in cfg.get_configured():
-            logger.debug('got config for %s-%s', sport, area)
+            logger.debug("got config for %s-%s", sport, area)
             if inc(sport, sports) and inc(area, areas):
                 do_update_area_sport(sport, area, since)
 
@@ -46,15 +46,14 @@ def do_update_area_sport(sport, area, since, dry_run=False):
         return
 
     if not data:
-        logger.debug('no updates for %s - %s', sport, area)
+        logger.debug("no updates for %s - %s", sport, area)
         return
 
     if dry_run:
         twitter_api = None
         my_tweets = None
     else:
-        twitter_api_keys = tweeter.TwitterKeys(
-                *cfg.get_twitter_api_keys(sport, area))
+        twitter_api_keys = tweeter.TwitterKeys(*cfg.get_twitter_api_keys(sport, area))
         twitter_api = tweeter.get_api(twitter_api_keys)
         my_tweets = tweeter.get_my_updates(twitter_api, count=50)
 
@@ -67,23 +66,23 @@ def do_update_area_sport(sport, area, since, dry_run=False):
 
 
 def get_tweet_msg(area, location, update):
-    if 'date' in update:
-        date = datetime.strftime(update['date'], cfg.TWEET_TIME_FMT)
+    if "date" in update:
+        date = datetime.strftime(update["date"], cfg.TWEET_TIME_FMT)
         msg = cfg.TWEET_FMT.format(location=location, date=date)
     else:
-        msg = cfg.TWEET_FMT2.format(location=location, text=update['txt'])
+        msg = cfg.TWEET_FMT2.format(location=location, text=update["txt"])
 
     msg = add_hashtags(msg, area)
 
     return msg
 
 
-def add_hashtags(msg: str, area: str, max_length: int=140):
+def add_hashtags(msg: str, area: str, max_length: int = 140):
     """Add hashtags if length allows."""
-    tags = ('#hiihto', f'#{area.lower()}')
+    tags = ("#hiihto", f"#{area.lower()}")
     for tag in tags:
         if len(msg) + len(tag) + 1 <= max_length:
-            msg = ' '.join((msg, tag))
+            msg = " ".join((msg, tag))
 
     return msg[:max_length]
 
@@ -100,7 +99,7 @@ def should_send_update(my_tweets, location, update):
         return True
 
     try:
-        update_dt = update['date']
+        update_dt = update["date"]
     except KeyError:
         logger.warning(f'no timestamp in {update["txt"]}')
         update_dt = time_utils.now_tz()
@@ -116,7 +115,7 @@ def should_send_update(my_tweets, location, update):
         # tweets format has been slightly different. Once format stabilizes,
         # can go back to simple version
         # if not tweet.text.startswith(location):
-            # continue
+        # continue
 
         text, sent_dt, parsed_location, made_dt = tweeter.parse_tweet(tweet)
 
@@ -137,4 +136,4 @@ def should_send_update(my_tweets, location, update):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # do_update(since='24h', areas=('OULU',), dry_run=False)
-    do_update(since='72h', sports=("LATU",), areas=("OULU",), dry_run=True)
+    do_update(since="72h", sports=("LATU",), areas=("OULU",), dry_run=True)

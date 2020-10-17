@@ -36,18 +36,18 @@ def get_twitter_api_keys(sport: str, area: str):
     The value of the env var must contain 4 values separated by whitespace:
       consumer_key consumer_secret access_key access_secret
     """
-    key = f'LATUBOT_KEYS_{sport.upper()}_{area.upper()}'
+    key = f"LATUBOT_KEYS_{sport.upper()}_{area.upper()}"
     try:
         return os.environ[key].split()
     except KeyError:
-        logger.debug(f'No twitter keys for {sport}, {area}')
+        logger.debug(f"No twitter keys for {sport}, {area}")
         return None
 
 
 def get_configured():
     """Generator for configured (sport, area) tuples."""
-    ks = (k for k in os.environ.keys() if k.startswith('LATUBOT_KEYS_'))
+    ks = (k for k in os.environ.keys() if k.startswith("LATUBOT_KEYS_"))
     for key in ks:
-        m = re.match('LATUBOT_KEYS_(?P<sport>\w*)_(?P<area>\w*)', key)
+        m = re.match("LATUBOT_KEYS_(?P<sport>\w*)_(?P<area>\w*)", key)
         assert m
-        yield m.group('sport'), m.group('area')
+        yield m.group("sport"), m.group("area")

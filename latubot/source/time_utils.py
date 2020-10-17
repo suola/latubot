@@ -5,7 +5,7 @@ import pytz
 
 
 def now_tz():
-    fin_tz = pytz.timezone('Europe/Helsinki')
+    fin_tz = pytz.timezone("Europe/Helsinki")
     utc_now = datetime.now(pytz.utc)
     tz_now = utc_now.astimezone(fin_tz)
     tz_now_naive = tz_now.replace(tzinfo=None)
@@ -20,14 +20,14 @@ def is_within(td: datetime, mins: int):
 
 
 def since_to_mins(since):
-    if since.endswith('m'):
+    if since.endswith("m"):
         mins = int(since[:-1])
-    elif since.endswith('h'):
+    elif since.endswith("h"):
         mins = 60 * int(since[:-1])
-    elif since.endswith('d'):
-        mins = 24*60 * int(since[:-1])
-    elif since.endswith('M'):
-        mins = 31*24*60 * int(since[:-1])
+    elif since.endswith("d"):
+        mins = 24 * 60 * int(since[:-1])
+    elif since.endswith("M"):
+        mins = 31 * 24 * 60 * int(since[:-1])
     else:
         mins = int(since)
 

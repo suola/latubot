@@ -24,11 +24,11 @@ def area_names():
 def load(sport, area, raw_response=False, since=None, empty=False):
     sport = sport.lower()
     if sport not in sport_names():
-        raise ValueError(f'Invalid sport {sport}')
+        raise ValueError(f"Invalid sport {sport}")
 
     area = area.upper()
     if area not in area_names():
-        raise ValueError(f'Invalid area {area}')
+        raise ValueError(f"Invalid area {area}")
 
     # if new raw data sources are added, unify and combine data here
     data = kunto.load(sport, area)
@@ -60,8 +60,10 @@ def _remove_empty(data):
 
 def _basic_filter(all_):
     """If all_=True include all items, otherwise only ones with date."""
+
     def f(v):
-        return all_ or 'date' in v
+        return all_ or "date" in v
+
     return f
 
 
@@ -70,7 +72,8 @@ def _time_filter(since):
 
     def f(v):
         try:
-            return time_utils.is_within(v['date'], mins)
+            return time_utils.is_within(v["date"], mins)
         except KeyError:
             return False
+
     return f
