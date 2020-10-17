@@ -2,13 +2,20 @@
 
 - sport (latu, luistelu)
 - area (OULU, SYOTE)
-- city (oulu, haukipudas)
-- place ("Iinatti 8km"...)
+- group (oulu, haukipudas) (previously city)
+- name ("Iinatti 8km"...) (previously place)
 
 """
 
+import logging
+from datetime import datetime
+
+from dateutil.tz import tzutc
+
 from latubot.source import kunto
-from latubot.source import time_utils
+from latubot import time_utils
+
+logger = logging.getLogger(__name__)
 
 
 def sport_names():
@@ -21,7 +28,8 @@ def area_names():
     return kunto.ALL_AREAS
 
 
-def load(sport, area, raw_response=False, since=None, empty=False):
+def load(sport, area, since=None, fn=None):
+    """Load updates."""
     sport = sport.lower()
     if sport not in sport_names():
         raise ValueError(f"Invalid sport {sport}")
@@ -30,50 +38,35 @@ def load(sport, area, raw_response=False, since=None, empty=False):
     if area not in area_names():
         raise ValueError(f"Invalid area {area}")
 
-    # if new raw data sources are added, unify and combine data here
-    data = kunto.load(sport, area)
-
-    if raw_response:
-        return data
+    # if new data sources are added, unify and combine data here
+    data = kunto.load(sport, area, fn=fn)
 
     if since:
-        data = _filter_data(data, _time_filter(since))
+        data = filter(_time_filter(since), data)
 
-    # empty=True to include empty items as well
-    if not empty:
-        data = _remove_empty(data)
-
-    return data
-
-
-def _filter_data(data, f):
-    nd = {a: {k: v for k, v in d.items() if f(v)} for a, d in data.items()}
-    return nd
-
-
-def _remove_empty(data):
-    """Remove 1st empty places, then cities."""
-    r = {a: {k: v for k, v in d.items() if v} for a, d in data.items()}
-    r = {a: d for a, d in r.items() if d}
-    return r
-
-
-def _basic_filter(all_):
-    """If all_=True include all items, otherwise only ones with date."""
-
-    def f(v):
-        return all_ or "date" in v
-
-    return f
+    return list(data)
 
 
 def _time_filter(since):
-    mins = time_utils.since_to_mins(since)
+    """Filter function to pass only items w/ date not older than since."""
+    delta = time_utils.since_to_delta(since)
+    now = datetime.now(tzutc())
 
     def f(v):
         try:
-            return time_utils.is_within(v["date"], mins)
+            return v["date"] and now - delta < v["date"]
         except KeyError:
             return False
 
     return f
+
+
+if __name__ == "__main__":
+    import sys
+    import json
+
+    logging.basicConfig(level=logging.DEBUG)
+    fn = sys.argv[1] if len(sys.argv) > 1 else None
+    d1 = load(sport="latu", area="OULU", since="7M", fn=fn)
+    logger.debug(f"Loaded {len(d1)} updates")
+    print(json.dumps(d1, cls=time_utils.DateTimeEncoder, indent=2))
