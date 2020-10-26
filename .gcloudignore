@@ -10,3 +10,4 @@ setup.py
 latubot/tweeter.py
 latubot/updater.py
 old_venv
+creds.json
