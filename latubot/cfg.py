@@ -21,7 +21,7 @@ TWEET_TIME_FMT = "%d.%m. klo %H:%M"
 TWEET_LOCATION_FMT = "{city}, {place}"
 TWEET_FMT = "{location}; Kunnostettu: {date}"
 TWEET_FMT2 = "{location}; {text}"
-TWEET_RE_PATTERN = "(.*)[;:] Kunnostettu:? (\d\d\.\d\d\. klo \d\d:\d\d)( #.*)?"
+TWEET_RE_PATTERN = r"(.*)[;:] Kunnostettu:? (\d\d\.\d\d\. klo \d\d:\d\d)( #.*)?"
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,6 @@ def get_configured():
     """Generator for configured (sport, area) tuples."""
     ks = (k for k in os.environ.keys() if k.startswith("LATUBOT_KEYS_"))
     for key in ks:
-        m = re.match("LATUBOT_KEYS_(?P<sport>\w*)_(?P<area>\w*)", key)
+        m = re.match(r"LATUBOT_KEYS_(?P<sport>\w*)_(?P<area>\w*)", key)
         assert m
         yield m.group("sport"), m.group("area")
