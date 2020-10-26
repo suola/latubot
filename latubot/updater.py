@@ -3,9 +3,8 @@
 import logging
 from datetime import datetime, timedelta
 
-from latubot import cfg
-from latubot import tweeter
-from latubot.source import api, time_utils
+from latubot import cfg, tweeter, time_utils
+from latubot.source import api
 
 logger = logging.getLogger(__name__)
 

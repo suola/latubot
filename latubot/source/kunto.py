@@ -101,7 +101,7 @@ def _parse(txt, sport):
     sport_updates = [v for v in updates if v["type"] == sport_map[sport]]
 
     for v in sport_updates:
-        v["date"] = _parse_maintained_at(v.get("maintainedAt"))
+        v["date"] = _parse_maintained_at(v.pop("maintainedAt", None))
 
     return sport_updates
 

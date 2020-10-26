@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.gitignore
+#!include:.gitignore
+LICENSE
+Makefile
+README.md
+data/
+setup.py
+latubot/tweeter.py
+latubot/updater.py
+old_venv
