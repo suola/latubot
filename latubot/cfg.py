@@ -11,6 +11,9 @@ import logging
 # in a row
 MIN_MINS_BETWEEN_UPDATES = 120
 
+# Max update age in minutes for an update to be notified
+MAX_UPDATE_AGE_TO_NOTIFY = 30
+
 # Sleep a while after each sent tweet to avoid spamming
 SECS_TO_SLEEP_AFTER_TWEET = 10
 
