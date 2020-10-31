@@ -63,23 +63,27 @@ def _find_newest_update_by_location(updates: Iterable) -> Iterable:
 def _gen_updates_to_notify(updates):
     """Generate updates that should be notified."""
     for update in updates:
-        last_notified = _find_last_notified(update["location"])
-        if last_notified is None:
+        update_age = datetime.now(timezone.utc) - update["date"]
+        if update_age > timedelta(minutes=cfg.MAX_UPDATE_AGE_TO_NOTIFY):
+            logger.debug(f"Skip {update['location']} update too old {update_age}")
+            continue
+
+        previously_notified = _find_last_notified(update["location"])
+        if previously_notified is None:
             logger.debug(f"Notify {update['location']}, never notified before")
             yield update
             continue
 
-        delta_last_update = update["date"] - last_notified
-        delta_now = datetime.now(timezone.utc) - update["date"]
-        if delta_last_update < timedelta(minutes=cfg.MIN_MINS_BETWEEN_UPDATES):
+        delta_since_previous_update = update["date"] - previously_notified
+        if delta_since_previous_update < timedelta(
+            minutes=cfg.MIN_MINS_BETWEEN_UPDATES
+        ):
             logger.debug(
-                f"Skip {update['location']} last notified {delta_last_update} ago"
+                f"Skip {update['location']} last notified {delta_since_previous_update} ago"
             )
-        elif delta_now > timedelta(minutes=cfg.MAX_UPDATE_AGE_TO_NOTIFY):
-            logger.debug(f"Skip {update['location']} update too old {delta_now}")
         else:
             logger.debug(
-                f"Notify {update['location']}, previously {delta_last_update} ago"
+                f"Notify {update['location']}, previously {delta_since_previous_update} ago"
             )
             yield update
 
