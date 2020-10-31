@@ -10,7 +10,7 @@ deploy-load:
 
 deploy-notify:
 	${DEPLOY_CMD} notify_http ${DEPLOY_ARGS} --trigger-http --allow-unauthenticated
-	${DEPLOY_CMD} notify_pubsub ${DEPLOY_ARGS} --trigger-topic cron-topic
+	${DEPLOY_CMD} notify_pubsub ${DEPLOY_ARGS} --trigger-topic notify-topic
 
 deploy: deploy-load deploy-notify
 
