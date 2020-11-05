@@ -2,3 +2,4 @@ python-dateutil==2.8.1
 requests==2.24.0
 tweepy==3.9.0
 google-cloud-firestore
+google-cloud-logging
