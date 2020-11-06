@@ -21,8 +21,3 @@ from latubot.gcloud_functions import (
 )
 
 __all__ = ["load_updates_http", "load_updates_pubsub", "notify_http", "notify_pubsub"]
-
-
-if __name__ == "__main__":
-    # load_updates(["latu"], ["OULU", "SYOTE"], "6M")
-    notify_pubsub(1, 2)
