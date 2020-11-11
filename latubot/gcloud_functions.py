@@ -42,4 +42,8 @@ def _init_logging(level=None):
     # Python logging module. By default this captures all logs
     # at INFO level and higher
     client.get_default_handler()
-    client.setup_logging(log_level=level or logging.INFO)
+    if level:
+        level = getattr(logging, level.upper())
+    else:
+        level = logging.INFO
+    client.setup_logging(log_level=level)
