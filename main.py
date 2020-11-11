@@ -3,9 +3,7 @@
 Google cloud functions are easiest to deploy from module named main.py.
 
 TODO:
-- logging
-- store updates in global variable, after loading new updates need to store only changed
-- fix cli usage
+- verify logging
 - deploy scheduler jobs from here
 
 Notes:

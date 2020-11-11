@@ -21,8 +21,8 @@ Example update document:
 
 import logging
 import hashlib
-from itertools import product
-from typing import Iterable
+from itertools import product, chain
+from typing import Iterable, Mapping
 
 from latubot.source import api
 from latubot.gcloud import get_db
@@ -45,6 +45,27 @@ def load_updates(sports=None, areas=None, since=None):
     return i
 
 
+def _only_new(func):
+    """Decorator to yield only new updates.
+
+    Caches updates in a set, and passes only new updates on subsequent
+    invocations. This affects function invocations during one run,
+    e.g. if google cloud functions are retained between invocations.
+    """
+    _cache = set()
+
+    def gen(*args, **kwargs):
+        logger.debug(f"{len(_cache)} cached updates exist")
+        for update in func(*args, **kwargs):
+            key = _hash_update(update)
+            if key not in _cache:
+                yield update
+                _cache.add(key)
+
+    return gen
+
+
+@_only_new
 def _gen_updates(sports, areas, since):
     """Load updates from all sports and areas."""
     for sport, area in product(sports, areas):
@@ -116,3 +137,8 @@ def _hash(items: Iterable[str]):
         m.update(item.encode())
         m.update(b"\xc0")
     return m.hexdigest()
+
+
+def _hash_update(update: Mapping):
+    """Hash an update."""
+    return _hash(str(x) for x in chain.from_iterable(sorted(update.items())))
