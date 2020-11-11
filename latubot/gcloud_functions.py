@@ -21,13 +21,6 @@ def load_updates_http(request):
     return f"Loaded {n} updates"
 
 
-def load_updates_pubsub(event, context):
-    """Gcloud function, triggered by pub/sub event."""
-    _init_logging()
-    n = load_updates(["latu"], ["OULU", "SYOTE"])
-    return f"Loaded {n} updates"
-
-
 def notify_http(request):
     """Gcloud function, triggered by http request."""
     since = request.args.get("since", None)
@@ -37,13 +30,6 @@ def notify_http(request):
 
     n = notify(since)
     return f"Sent {n} notifications from updates since {since}"
-
-
-def notify_pubsub(event, context):
-    """Gcloud function, triggered by pub/sub event."""
-    _init_logging()
-    n = notify()
-    return f"Sent {n} notifications"
 
 
 def _init_logging(level=None):
