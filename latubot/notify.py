@@ -17,17 +17,18 @@ from typing import Iterable
 from latubot.time_utils import since_to_delta
 from latubot.gcloud import get_db
 from latubot import cfg
+from latubot.tweet import tweet_update
 
 logger = logging.getLogger(__name__)
 
 
-def notify(since="15m"):
+def notify(since="15m", tweet=False):
     """Send notifications for updates."""
     since = since or "15m"
 
     i = 0
     for i, update in enumerate(_find_updates(since)):
-        _notify_one_update(update)
+        _notify_one_update(update, tweet)
 
     return i
 
@@ -64,7 +65,7 @@ def _gen_updates_to_notify(updates):
     """Generate updates that should be notified."""
     for update in updates:
         update_age = datetime.now(timezone.utc) - update["date"]
-        if update_age > timedelta(minutes=cfg.MAX_UPDATE_AGE_TO_NOTIFY):
+        if update_age > timedelta(minutes=cfg.MAX_UPDATE_AGE_TO_NOTIFY) > timedelta(0):
             logger.debug(f"Skip {update['location']} update too old {update_age}")
             continue
 
@@ -101,15 +102,18 @@ def _find_last_notified(location):
         return doc.to_dict().get("last_notified")
 
 
-def _notify_one_update(update):
+def _notify_one_update(update, tweet):
     """Notify one update."""
-    _send_notification(update)
+    _send_notification(update, tweet)
     _save_notification_time(update)
 
 
-def _send_notification(update):
+def _send_notification(update, tweet):
     """Send notification for an update."""
-    print(f"TODO: Send notification for {update}")
+    if tweet:
+        tweet_update(update)
+    else:
+        print(f"(pretend) Send notification for {update}")
 
 
 def _save_notification_time(update):

@@ -102,6 +102,16 @@ def _save_location(location):
     return doc_ref
 
 
+def load_location(doc_name):
+    """Load a location from db by name."""
+    doc_ref = get_db().collection("locations").document(doc_name)
+    doc = doc_ref.get()
+    if not doc.exists:
+        return None
+    else:
+        return doc.to_dict()
+
+
 def _save_status(doc_ref, status):
     """Save a status update in db."""
     if not status.get("date"):

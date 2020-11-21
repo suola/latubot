@@ -24,11 +24,12 @@ def load_updates_http(request):
 def notify_http(request):
     """Gcloud function, triggered by http request."""
     since = request.args.get("since", None)
+    tweet = "tweet" in request.args
     log_level = request.args.get("log_level")
 
     _init_logging(log_level)
 
-    n = notify(since)
+    n = notify(since, tweet)
     return f"Sent {n} notifications from updates since {since}"
 
 

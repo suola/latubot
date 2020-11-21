@@ -12,7 +12,7 @@ import logging
 MIN_MINS_BETWEEN_UPDATES = 120
 
 # Max update age in minutes for an update to be notified
-MAX_UPDATE_AGE_TO_NOTIFY = 30
+MAX_UPDATE_AGE_TO_NOTIFY = 0
 
 # Sleep a while after each sent tweet to avoid spamming
 SECS_TO_SLEEP_AFTER_TWEET = 10
@@ -41,9 +41,9 @@ def get_twitter_api_keys(sport: str, area: str):
     """
     key = f"LATUBOT_KEYS_{sport.upper()}_{area.upper()}"
     try:
-        return os.environ[key].split()
+        return tuple(os.environ[key].split())
     except KeyError:
-        logger.debug(f"No twitter keys for {sport}, {area}")
+        logger.error(f"No twitter keys for {sport}, {area}")
         return None
 
 
