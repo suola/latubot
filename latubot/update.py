@@ -41,7 +41,7 @@ def load_updates(sports=None, areas=None, since=None):
     for i, update in enumerate(_gen_updates(sports, areas, since)):
         _save_update(update)
 
-    logger.info(f"Loaded {i} updates")
+    logger.info(f"Saved {i} updates")
     return i
 
 

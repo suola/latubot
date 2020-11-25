@@ -8,8 +8,8 @@ from latubot.update import load_updates
 
 def load_updates_http(request):
     """Gcloud function, triggered by http request."""
-    sport = filter(None, request.args.get("sport", "latu").split(","))
-    area = filter(None, request.args.get("area", "OULU,SYOTE").split(","))
+    sport = tuple(filter(None, request.args.get("sport", "latu").split(",")))
+    area = tuple(filter(None, request.args.get("area", "OULU,SYOTE").split(",")))
     since = request.args.get("since", None)
     log_level = request.args.get("log_level")
 
