@@ -2,8 +2,6 @@
 
 import logging
 
-import google.cloud.logging
-
 from latubot.notify import notify
 from latubot.update import load_updates
 
@@ -35,16 +33,9 @@ def notify_http(request):
 
 def _init_logging(level=None):
     """Initialize logging."""
-    # https://cloud.google.com/logging/docs/setup/python
-    client = google.cloud.logging.Client()
-
-    # Retrieves a Cloud Logging handler based on the environment
-    # you're running in and integrates the handler with the
-    # Python logging module. By default this captures all logs
-    # at INFO level and higher
-    client.get_default_handler()
     if level:
-        level = getattr(logging, level.upper())
+        log_level = getattr(logging, level.upper())
     else:
-        level = logging.INFO
-    client.setup_logging(log_level=level)
+        log_level = logging.INFO
+
+    logging.basicConfig(level=log_level, format="%(asctime)s: %(message)s")
