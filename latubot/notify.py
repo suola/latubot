@@ -12,14 +12,42 @@
 import logging
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
+from itertools import islice
 from typing import Iterable
+
+from google.cloud import firestore
 
 from latubot.time_utils import since_to_delta
 from latubot.gcloud import get_db
 from latubot import cfg
 from latubot.tweet import tweet_update
+from latubot.update import load_location
 
 logger = logging.getLogger(__name__)
+
+
+def get_updates(filter_=None, n=10):
+    """Get latest updates."""
+    filter_keys = ("name", "group", "area")
+
+    def f(update):
+        return filter_ is None or any(filter_ in update[k] for k in filter_keys)
+
+    filtered_updates = filter(f, _find_latest_updates())
+    return tuple(islice(filtered_updates, n))
+
+
+def _find_latest_updates():
+    """Generate update documents from firestore in reverse order."""
+    query = (
+        get_db()
+        .collection_group("updates")
+        .order_by("date", direction=firestore.Query.DESCENDING)
+    )
+    for doc_ref in query.stream():
+        doc = doc_ref.to_dict()
+        location = load_location(doc["location"])
+        yield {**location, **doc}
 
 
 def notify(since="15m", tweet=False):

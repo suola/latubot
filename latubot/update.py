@@ -38,11 +38,12 @@ def load_updates(sports=None, areas=None, since=None):
     logger.info(f"Load updates for {sports} in {areas} since {since}")
 
     i = 0
+    n_updated_in_db = 0
     for i, update in enumerate(_gen_updates(sports, areas, since)):
-        _save_update(update)
+        n_updated_in_db += _save_update(update)
 
-    logger.info(f"Saved {i} updates")
-    return i
+    logger.info(f"Loaded {i} updates, saved {n_updated_in_db} in db")
+    return n_updated_in_db
 
 
 def _only_new(func):
@@ -90,6 +91,7 @@ def _save_update(update):
     updated = _save_status(location_doc_ref, status)
     if updated:
         logger.debug(f"{location} updated")
+    return updated
 
 
 def _save_location(location):

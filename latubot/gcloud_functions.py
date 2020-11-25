@@ -1,9 +1,11 @@
 """Google cloud function entry points"""
 
 import logging
+import json
 
-from latubot.notify import notify
+from latubot.notify import notify, get_updates
 from latubot.update import load_updates
+from latubot.time_utils import DateTimeEncoder
 
 
 def load_updates_http(request):
@@ -16,7 +18,7 @@ def load_updates_http(request):
     _init_logging(log_level)
 
     n = load_updates(sport, area, since)
-    return f"Loaded {n} updates"
+    return f"Loaded {n} new updates"
 
 
 def notify_http(request):
@@ -29,6 +31,18 @@ def notify_http(request):
 
     n = notify(since, tweet)
     return f"Sent {n} notifications from updates since {since}"
+
+
+def get_updates_http(request):
+    """Gcloud function, triggered by http request."""
+    filter_ = request.args.get("filter")
+    n = int(request.args.get("n", 10))
+    log_level = request.args.get("log_level")
+
+    _init_logging(log_level)
+
+    updates = get_updates(filter_, n)
+    return json.dumps(updates, indent=2, cls=DateTimeEncoder, sort_keys=True)
 
 
 def _init_logging(level=None):

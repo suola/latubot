@@ -17,6 +17,7 @@ Notes:
 from latubot.gcloud_functions import (
     load_updates_http,
     notify_http,
+    get_updates_http,
 )
 
-__all__ = ["load_updates_http", "notify_http"]
+__all__ = ["load_updates_http", "notify_http", "get_updates_http"]

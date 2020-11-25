@@ -2,9 +2,11 @@
 
 import argparse
 import logging
+import json
 
-from latubot.notify import notify
+from latubot.notify import notify, get_updates
 from latubot.update import load_updates
+from latubot.time_utils import DateTimeEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,11 @@ def _update(args):
 def _notify(args):
     logger.info(f"_notify {args}")
     notify(args.since)
+
+
+def _get_updates(args):
+    logger.info(f"_get_updates {args}")
+    print(json.dumps(get_updates(args.filter, args.n), indent=2, cls=DateTimeEncoder, sort_keys=True))
 
 
 def arg_parser():
@@ -60,6 +67,12 @@ def arg_parser():
     notify_parser = subparsers.add_parser("notify")
     notify_parser.set_defaults(func=_notify)
     notify_parser.add_argument("--since", default="1h")
+
+    # get_updates
+    get_updates_parser = subparsers.add_parser("get_updates")
+    get_updates_parser.set_defaults(func=_get_updates)
+    get_updates_parser.add_argument("--filter")
+    get_updates_parser.add_argument("-n", type=int, default=10)
 
     return parser
 
