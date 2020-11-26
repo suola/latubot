@@ -43,7 +43,7 @@ def tweet_update(update):
 
 def _send(api: tweepy.API, msg: str):
     """Send tweet w/ authenticated api."""
-    if True or api is None:
+    if api is None:
         logger.info(f"tweet: {msg}")
     else:
         api.update_status(msg)
