@@ -12,7 +12,7 @@ Currently supports updates from kunto fluentprogress web pages.
 ## Tweets
 
 Updates into twitter can be enabled by setting environment variables. For
-example, for oulu env var must be named `LATUBOT_KEYS_LATU_OULU` to tweet
+example, for oulu env var must be named `LATUBOT_KEYS_SKITRACK_OULU` to tweet
 updates for ski tracks. The value of the env var must contain the following
 keys for the twitter account separated by whitespaces:
 
@@ -26,8 +26,8 @@ All cities with kunto service are listed in
 
 ## Deployment
 
-TODO
+All the functions can be deployed with `make deploy`.
 
-## Update packages
+## Setup in google cloud
 
-TODO
+Functions are deployed as google cloud functions with HTTP trigger. Functions to load updates and send notifications are triggered by google cloud scheduler jobs. The updates are stored in a google cloud firestore database.
