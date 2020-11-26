@@ -118,7 +118,7 @@ def _save_status(doc_ref, status):
     """Save a status update in db."""
     if not status.get("date"):
         logger.debug(f"No date in {status}, skip")
-        return
+        return False
 
     status_doc_name = _status_doc_name(status)
     status_ref = doc_ref.collection("updates").document(status_doc_name)
