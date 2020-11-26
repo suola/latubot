@@ -138,10 +138,7 @@ def _notify_one_update(update, tweet):
 
 def _send_notification(update, tweet):
     """Send notification for an update."""
-    if tweet:
-        tweet_update(update)
-    else:
-        print(f"(pretend) Send notification for {update}")
+    tweet_update(update, not tweet)
 
 
 def _save_notification_time(update):

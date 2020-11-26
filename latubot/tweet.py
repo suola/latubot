@@ -25,7 +25,7 @@ TwitterKeys = namedtuple(
 )
 
 
-def tweet_update(update):
+def tweet_update(update, pretend):
     """Send tweet for the update."""
     location = load_location(update["location"])
     keys = cfg.get_twitter_api_keys(location["type"], location["area"])
@@ -38,7 +38,7 @@ def tweet_update(update):
         return
 
     msg = _build_tweet_msg(location, update)
-    _send(api, msg)
+    _send(None if pretend else api, msg)
 
 
 def _send(api: tweepy.API, msg: str):
@@ -50,13 +50,21 @@ def _send(api: tweepy.API, msg: str):
         time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
 
 
-def _build_tweet_msg(location, update):
+def _build_tweet_msg(location, update, max_length=280):
     """Build tweet message for the update."""
     group = location["group"]
     name = location["name"]
     date = update["date"].astimezone(tz_local).strftime("%d.%m klo %H:%M")
+    description = update.get("description")
     msg = f"{group}, {name}; Kunnostettu {date}"
-    msg = _add_hashtags(msg, location["area"])
+
+    # Add description if it exists and fits
+    if description:
+        msg_ = f"{msg} ({description})"
+        if len(msg_) <= max_length:
+            msg = msg_
+
+    msg = _add_hashtags(msg, location["area"], max_length)
     return msg
 
 
