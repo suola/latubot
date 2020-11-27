@@ -44,8 +44,9 @@ def tweet_update(update, pretend):
 def _send(api: tweepy.API, msg: str):
     """Send tweet w/ authenticated api."""
     if api is None:
-        logger.info(f"tweet: {msg}")
+        logger.info(f"pretend tweet: {msg}")
     else:
+        logger.debug(f"send tweet: {msg}")
         api.update_status(msg)
         time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
 
