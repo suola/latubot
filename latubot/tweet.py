@@ -57,7 +57,10 @@ def _build_tweet_msg(location, update, max_length=280):
     name = location["name"]
     date = update["date"].astimezone(tz_local).strftime("%d.%m klo %H:%M")
     description = update.get("description")
-    msg = f"{group}, {name}; Kunnostettu {date}"
+    is_closed = update.get("status", "").upper() == "CLOSED"
+    action = "Päivitetty" if is_closed else "Kunnostettu"
+
+    msg = f"{group}, {name}; {action} {date}"
 
     # Add description if it exists and fits
     if description:
