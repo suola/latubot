@@ -132,13 +132,14 @@ def _find_last_notified(location):
 
 def _notify_one_update(update, tweet):
     """Notify one update."""
-    _send_notification(update, tweet)
-    _save_notification_time(update)
+    ok = _send_notification(update, tweet)
+    if ok:
+        _save_notification_time(update)
 
 
 def _send_notification(update, tweet):
     """Send notification for an update."""
-    tweet_update(update, not tweet)
+    return tweet_update(update, not tweet)
 
 
 def _save_notification_time(update):

@@ -38,17 +38,24 @@ def tweet_update(update, pretend):
         return
 
     msg = _build_tweet_msg(location, update)
-    _send(None if pretend else api, msg)
+    return _send(None if pretend else api, msg)
 
 
 def _send(api: tweepy.API, msg: str):
     """Send tweet w/ authenticated api."""
     if api is None:
         logger.info(f"pretend tweet: {msg}")
+        return True
     else:
         logger.debug(f"send tweet: {msg}")
-        api.update_status(msg)
-        time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
+        try:
+            api.update_status(msg)
+        except tweepy.TweepError as e:
+            logger.error(f"error {e} sending tweet: {msg}")
+            return False
+        else:
+            time.sleep(cfg.SECS_TO_SLEEP_AFTER_TWEET)
+            return True
 
 
 def _build_tweet_msg(location, update, max_length=280):
