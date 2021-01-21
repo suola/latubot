@@ -5,7 +5,7 @@ Bot for ski track maintenance updates
 ## Introduction
 
 A personal project for hacking around. Updates can be found in Twitter
-@latubot.
+`@latubot` and `@latubot_syote`.
 
 Currently supports updates from kunto fluentprogress web pages.
 
