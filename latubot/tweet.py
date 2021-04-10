@@ -8,6 +8,7 @@
 import logging
 import functools
 import time
+import random
 from collections import namedtuple
 
 import tweepy
@@ -81,9 +82,9 @@ def _build_tweet_msg(location, update, max_length=280):
 
 def _add_hashtags(msg: str, area: str, max_length: int = 140):
     """Add hashtags if length allows."""
-    tags = ("#hiihto", f"#{area.lower()}")
-    for tag in tags:
-        if len(msg) + len(tag) + 1 <= max_length:
+    tags = (("#hiihto", 0.01), (f"#{area.lower()}", 1))
+    for tag, probability in tags:
+        if len(msg) + len(tag) + 1 <= max_length and random.random() < probability:
             msg = " ".join((msg, tag))
 
     return msg[:max_length]
