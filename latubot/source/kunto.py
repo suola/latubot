@@ -69,7 +69,7 @@ def load(sport: str = _DEFAULT_SPORT, area: str = _DEFAULT_AREA, fn=None):
 def _load_raw_data(area):
     """Load raw data from kunto server."""
     base_url = _URL_TEMPLATE.format(area=area.lower())
-    url = base_url + "api/venues"
+    url = base_url + "api/venue/list"
     resp = requests.get(url)
     resp.encoding = "utf-8"
     return resp.text
